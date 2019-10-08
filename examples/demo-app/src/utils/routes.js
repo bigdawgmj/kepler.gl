@@ -42,7 +42,7 @@ export function buildAppRoutes(Component) {
   return [
     (<Route key="auth" path="auth" component={Demo} onEnter={onAuthEnterCallback} />),
     (
-      <Route key="demo" path="demo">
+      <Route key="dambreak" path="dam-break">
         <IndexRoute component={Component} />
         <Route path="map" component={Component} />
         <Route path="(:id)" component={Component} />

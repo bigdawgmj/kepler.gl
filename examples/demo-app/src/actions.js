@@ -39,6 +39,8 @@ export const LOAD_REMOTE_RESOURCE_SUCCESS = 'LOAD_REMOTE_RESOURCE_SUCCESS';
 export const LOAD_REMOTE_RESOURCE_ERROR = 'LOAD_REMOTE_RESOURCE_ERROR';
 export const LOAD_MAP_SAMPLE_FILE = 'LOAD_MAP_SAMPLE_FILE';
 export const SET_SAMPLE_LOADING_STATUS = 'SET_SAMPLE_LOADING_STATUS';
+export const REQUEST_COMBINED_RESULTS = 'REQUEST_COMBINED_RESULTS';
+export const RECEIVE_COMBINED_RESULTS = 'RECEIVE_COMBINED_RESULTS';
 
 // Sharing
 export const PUSHING_FILE = 'PUSHING_FILE';
@@ -49,6 +51,68 @@ export function initApp() {
   return {
     type: INIT
   };
+}
+
+/**
+ * this method loads the combined_results.json
+ * @param {string} method the string id for the loading method to use
+ * @returns {{type: string, method: *}}
+ */
+export function requestCombinedResults(url) {
+  return {
+    type: REQUEST_COMBINED_RESULTS,
+    url
+  };
+}
+
+export function receiveCombinedResults(url, json) {
+  console.log(json);
+  const sas = '?sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&se=2019-10-07T23:09:59Z&st=2019-10-07T15:09:59Z&spr=https&sig=JLdLoRbzaVdQr%2BJwCbsTitTkDMbi3Rp7QnHl9HqADTY%3D';
+  // const files = _mapGeojsonFiles(json);
+  // this.loadRemoteMap(files.arrival + sas);
+  // this.loadRemoteMap(files.depth + sas);
+  return {
+    type: RECEIVE_COMBINED_RESULTS,
+    url,
+    combinedResults: _mapGeojsonFiles(json),
+    sas: sas,
+    receivedAt: Date.now()
+  };
+}
+
+function _mapFiles(files) {
+  return files.filter(f => 
+    f.Url.lastIndexOf('.geojson') !== -1 && 
+    f.Url.lastIndexOf('crop') === -1);
+}
+
+// TODO: Clean this up!
+function _mapGeojsonFiles(json) {
+  const arrival = json['post-process-arrival']['resultFiles'];
+  const arr = _mapFiles(arrival)[0]['Url'];
+  const depth = json['post-process-depth']['resultFiles'];
+  const dep = _mapFiles(depth)[0]['Url'];
+  console.log(arr, dep);
+  return {
+    'arrival': arr,
+    'depth': dep
+  };
+}
+
+export function fetchCombinedResults(url) {
+  console.log(url);
+  return function(dispatch) {
+    dispatch(requestCombinedResults(url))
+
+    return fetch(url)
+      .then(
+        response => response.json(),
+        error => console.log('An error occured getting combined_results.json', error)
+      )
+      .then(json => 
+        dispatch(receiveCombinedResults(url, json))
+      )
+  }
 }
 
 /**
@@ -135,6 +199,39 @@ function detectResponseError(response) {
 export function loadRemoteMap(options) {
   return dispatch => {
     dispatch(setLoadingMapStatus(true));
+    loadRemoteRawData(options.dataUrl).then(
+      // In this part we turn the response into a FileBlob
+      // so we can use it to call loadFiles
+      file => {
+        dispatch(loadFiles([
+          /* eslint-disable no-undef */
+          new File([file], options.dataUrl)
+          /* eslint-enable no-undef */
+        ])).then(
+          () => dispatch(setLoadingMapStatus(false))
+        );
+
+      },
+      error => {
+        const {target = {}} = error;
+        const {status, responseText} = target;
+        dispatch(loadRemoteResourceError({status, message: responseText}, options.dataUrl));
+      }
+    );
+  }
+}
+
+/**
+ * The method is able to load combined_results.json files.
+ * It uses loadFile action to dispatcha and add new datasets/configs
+ * @param options
+ * @param {string} options.resultsUrl the URL to fetch data from. Current supoprted file type json,csv, kepler.json
+ * @returns {Function}
+ */
+export function loadCombinedResults(options) {
+  return dispatch => {
+    console.log('Called for results');
+    // dispatch(setLoadingMapStatus(true));
     loadRemoteRawData(options.dataUrl).then(
       // In this part we turn the response into a FileBlob
       // so we can use it to call loadFiles
@@ -276,6 +373,7 @@ function loadRemoteConfig(url) {
  * @returns {Promise<any>}
  */
 function loadRemoteData(url) {
+  console.log(url);
   if (!url) {
     // TODO: we should return reject with an appropriate error
     return Promise.resolve(null)

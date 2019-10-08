@@ -33,7 +33,8 @@ import {
   SET_LOADING_METHOD,
   LOAD_MAP_SAMPLE_FILE,
   LOAD_REMOTE_RESOURCE_SUCCESS,
-  SET_SAMPLE_LOADING_STATUS
+  SET_SAMPLE_LOADING_STATUS,
+  RECEIVE_COMBINED_RESULTS
 } from '../actions';
 
 import {
@@ -53,6 +54,8 @@ const initialAppState = {
   previousMethod: null,
   sampleMaps: [], // this is used to store sample maps fetch from a remote json file
   isMapLoading: false, // determine whether we are loading a sample map,
+  combinedResults: {},
+  sas: '',
   error: null, // contains error when loading/retrieving data/configuration
     // {
     //   status: null,
@@ -81,6 +84,11 @@ export const appReducer = handleActions({
   [SET_SAMPLE_LOADING_STATUS]: (state, action) => ({
     ...state,
     isMapLoading: action.isMapLoading
+  }),
+  [RECEIVE_COMBINED_RESULTS]: (state, action) => ({
+    ...state,
+    combinedResults: action.combinedResults,
+    sas: action.sas
   })
 }, initialAppState);
 

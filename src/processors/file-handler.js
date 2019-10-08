@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import {FileReader} from 'global/window';
-import {processCsvData, processGeojson, processKeplerglJSON} from './data-processor';
+import { FileReader } from 'global/window';
+import { processCsvData, processGeojson, processKeplerglJSON } from './data-processor';
 
 const FILE_HANDLERS = {
   csv: loadCsv,
@@ -32,6 +32,11 @@ export function getFileHandler(fileBlob) {
 }
 
 export function getFileType(filename) {
+  // PNNL: Addition (Maybe pull this into a set of PNNL utilities functions)
+  if (filename.lastIndexOf('?') !== -1) {
+    filename = filename.split('?')[0]
+  }
+
   if (filename.endsWith('csv')) {
     return 'csv';
   }
@@ -48,7 +53,7 @@ export function getFileType(filename) {
 function readCSVFile(fileBlob) {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
-    fileReader.onload = ({target: {result}}) => {
+    fileReader.onload = ({ target: { result } }) => {
       resolve(result);
     };
 
@@ -65,7 +70,7 @@ export function loadCsv(fileBlob, processor = processCsvData) {
 function readJSONFile(fileBlob) {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
-    fileReader.onload = ({target: {result}}) => {
+    fileReader.onload = ({ target: { result } }) => {
       try {
         const json = JSON.parse(result);
         resolve(json);

@@ -34,6 +34,7 @@ import {AUTH_TOKENS} from './constants/default-settings';
 import {
   exportFileToCloud,
   loadRemoteMap,
+  fetchCombinedResults,
   loadSampleConfigurations,
   setCloudLoginSuccess
 } from './actions';
@@ -108,10 +109,17 @@ class App extends Component {
     }
 
     // Load map using a custom
-    if (query.mapUrl) {
-      // TODO?: validate map url
-      this.props.dispatch(loadRemoteMap({dataUrl: query.mapUrl}));
-    }
+    // TODO: Need to get the SAS token some how? Need to add to the actions most likely a fetch.
+    // 1) Need to get the combinedresult.json
+    const resultsUrl = 'http://localhost:5000/getjson';
+    this.props.dispatch(fetchCombinedResults(resultsUrl))
+      .then(x => {
+        // 2) load the files
+        if (Object.entries(this.props.demo.app.combinedResults).length !== 0) {
+          this.props.dispatch(loadRemoteMap({dataUrl: this.props.demo.app.combinedResults.arrival + this.props.demo.app.sas}));
+          this.props.dispatch(loadRemoteMap({dataUrl: this.props.demo.app.combinedResults.depth + this.props.demo.app.sas}));
+        }
+      });
   }
 
   componentDidMount() {
@@ -123,6 +131,7 @@ class App extends Component {
     // this._loadSampleData();
     // Notifications
     // this._loadMockNotifications();
+    console.log(this.props.demo.app);
   }
 
   _showBanner = () => {
