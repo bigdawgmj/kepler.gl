@@ -32,6 +32,11 @@ export function getFileHandler(fileBlob) {
 }
 
 export function getFileType(filename) {
+  // Support SAS Tokens appended to the end of a URL
+  if (filename.lastIndexOf('?') !== -1) {
+    filename = filename.split('?')[0]
+  }
+
   if (filename.endsWith('csv')) {
     return 'csv';
   }
