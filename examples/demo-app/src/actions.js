@@ -67,7 +67,7 @@ export function requestCombinedResults(url) {
 
 export function receiveCombinedResults(url, json) {
   console.log(json);
-  const sas = '?sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&se=2019-10-07T23:09:59Z&st=2019-10-07T15:09:59Z&spr=https&sig=JLdLoRbzaVdQr%2BJwCbsTitTkDMbi3Rp7QnHl9HqADTY%3D';
+  const sas = '';
   // const files = _mapGeojsonFiles(json);
   // this.loadRemoteMap(files.arrival + sas);
   // this.loadRemoteMap(files.depth + sas);
